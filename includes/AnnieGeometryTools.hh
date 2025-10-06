@@ -123,7 +123,14 @@ inline double num_O_targets_in_FV() {
   constexpr double N_Avogadro = 6.02214076e23; // mol^(-1)
   constexpr double mass_density_H2O = 1.; // g/cm^3
 
-  double num_O = volume * mass_density_H2O * N_Avogadro / m_mol_H2O;
+  // if you are assuming pure water
+  //double num_O = volume * mass_density_H2O * N_Avogadro / m_mol_H2O;
+
+  // if considering Gd-loading (its literally a 0.1% difference)
+  double gd_fraction = 0.001;  // mass fraction of Gd (0.001 = 0.1% for Phase II)
+  double mass_H2O = volume * mass_density_H2O * (1.0 - gd_fraction);  // g (mass of water within the FV considering Gd loading)
+  double num_O = mass_H20 * N_Avogadro / m_mol_H2O;  // number of O16 targets given Gd loading
+ 
   return num_O;
 }
 
