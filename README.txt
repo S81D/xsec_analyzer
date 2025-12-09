@@ -4,7 +4,7 @@ Guide for ANNIE Usage of STV-Analysis
 ***Workflow***
 --------------
 1. Enter the ANNIE ToolAnalysis container: './start_singularity.sh'
-2. Set up the environment: 'source setup.sh'
+2. Set up the environment: 'source setup_stv.sh'
 3. Prepare input files (if necessary): 'root -l stvPrep.C'
 4. Clean and compile: 'make clean' and 'make'
 5. Univmake: './univmake files_to_process.txt tutorial_bin_config.txt output.root'
