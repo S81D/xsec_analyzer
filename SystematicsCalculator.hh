@@ -858,7 +858,9 @@ void SystematicsCalculator::build_universes(TDirectoryFile &root_tdir)
           if ( temp_pot == 0 ) throw std::runtime_error( "Missing POT in MC file!" );
 //          file_pot = temp_pot->GetVal();
           file_pot = temp_pot;
-          file_pot = 1.5297e+20; //ACTUALLY FIX THIS SO IT'S NOT 3.2545e16
+
+          // manually enter POT for the MC files you are running over (this should match the POT for the data)
+          file_pot = 1.5297e+20; // The current world POT is: 2.3081794e+20 per 4183 files (5.518e16 POT per file on average)
         }
         else
         {
