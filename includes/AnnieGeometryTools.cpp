@@ -5,7 +5,7 @@
 
 
 
-
+ // MicroBooNE
  double FV_X_MIN =   21.5;
  double FV_X_MAX =  234.85;
 
@@ -18,8 +18,8 @@
 ////ANNIE FV Boundaries
  double FV_RAD = 100.0;
 //
- double A_FV_Y_MIN = -100.0;
- double A_FV_Y_MAX =  100.0;
+ double A_FV_Y_MIN = -150.0;
+ double A_FV_Y_MAX =  150.0;
 //
  double A_Z_CTR = 168.1; //Z center of tank
 
@@ -28,8 +28,8 @@
 
 TGraph* createBoundaryGraph(const std::string& plotType) {
     double radius = 100.;  // cm
-    double y_min = -100.;  // cm
-    double y_max = 100.;   // cm
+    double y_min = -150.;  // cm
+    double y_max = 150.;   // cm
     double z_center = 168.1;  // cm
 
     std::vector<Vertex_XYZ> VertexPostion;
