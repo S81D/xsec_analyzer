@@ -126,7 +126,7 @@ inline double num_O_targets_in_FV() {
   // if you are assuming pure water
   //double num_O = volume * mass_density_H2O * N_Avogadro / m_mol_H2O;
 
-  // if considering Gd-loading (its literally a 0.1% difference)
+  // if considering Gd-loading (its literally a 0.1% difference --> should work out to double num_O = 3.147e29;)
   double gd_fraction = 0.001;  // mass fraction of Gd (0.001 = 0.1% for Phase II)
   double mass_H2O = volume * mass_density_H2O * (1.0 - gd_fraction);  // g (mass of water within the FV considering Gd loading)
   double num_O = mass_H20 * N_Avogadro / m_mol_H2O;  // number of O16 targets given Gd loading
@@ -149,7 +149,12 @@ inline double integrated_numu_flux_in_FV( double pot ) {
   // root [4] hEnumu_cv->Integral()
   // (double) 7.3762291e-10
   // See the README file in that same folder for details.
-  constexpr double numu_per_cm2_per_POT_in_AV = 2.03981e-9;
+  //
+  // for NC, we must include both numu and nue --> the value below is the combined flux
+  constexpr double numu_per_cm2_per_POT_in_AV = 2.03981e-8;  // 2.26256e-8 is what James uses (just nu mu, in his condensed FV)
+                                                             // derived values for me:          
+                                                             // Integrated νμ flux: 2.028605343287099e-08 per POT per cm^2
+                                                             // Integrated νe flux: 1.120153603922698e-10 per POT per cm^2
   double flux = pot * numu_per_cm2_per_POT_in_AV; // numu / cm^2
   return flux;
 }
