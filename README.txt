@@ -1,5 +1,7 @@
 Guide for ANNIE Usage of STV-Analysis
 
+NOTE: The workflow is near-identical to the ANNIE CC analysis, however please use NC_analyzer.cpp in place of chi_square_cc0pi_christian.cpp (and note that all recommendations below / notes that apply to that script should also be applied to NC_analyzer)
+
 --------------
 ***Workflow***
 --------------
@@ -9,7 +11,7 @@ Guide for ANNIE Usage of STV-Analysis
 4. Clean and compile: 'make clean' and 'make'
 5. Univmake: './univmake files_to_process.txt tutorial_bin_config.txt output.root'
 6. Systematic uncertainty: 'root -l tutorial_slice_plots.C'
-7. XSec & Event Rate Plots: ./chi_square_cc0pi_christian
+7. XSec, Event Rate Plots, and Systematic Uncertainty: ./NC_analyzer
 
 -------------
 ***stvPrep***
