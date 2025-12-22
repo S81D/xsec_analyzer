@@ -130,25 +130,18 @@ inline double num_O_targets_in_FV() {
   double gd_fraction = 0.001;  // mass fraction of Gd (0.001 = 0.1% for Phase II)
   double mass_H2O = volume * mass_density_H2O * (1.0 - gd_fraction);  // g (mass of water within the FV considering Gd loading)
   double num_O = mass_H20 * N_Avogadro / m_mol_H2O;  // number of O16 targets given Gd loading
+
+  //double num_O = 3.147e29; // accounting for Gd loading (< 1% difference) 
  
   return num_O;
 }
 
-// Returns the total BNB muon neutrino flux (numu / cm^2) in the fiducial
+// Returns the total BNB neutrino flux (nu / cm^2) in the fiducial
 // volume as a function of a given beam exposure (measured in
 // protons-on-target)
 // NOTE: This is currently approximated using the flux in the *active volume*.
-// TODO: Revisit this approximation
+// NOTE: this has been adapted from MicroBooNE + ANNIE CC to give you TOTAL nu instead of just numu
 inline double integrated_numu_flux_in_FV( double pot ) {
-  // Obtained using the histogram hEnumu_cv (the central-value numu flux
-  // in the MicroBooNE active volume as a function of neutrino energy)
-  // stored in /pnfs/uboone/persistent/uboonebeam/bnb_gsimple
-  // /bnb_gsimple_fluxes_01.09.2019_463_hist/. The ROOT commmands executed
-  // were
-  // root [3] hEnumu_cv->Scale( 1/(4997.*5e8)/(256.35*233.) )
-  // root [4] hEnumu_cv->Integral()
-  // (double) 7.3762291e-10
-  // See the README file in that same folder for details.
   //
   // for NC, we must include both numu and nue --> the value below is the combined flux
   constexpr double numu_per_cm2_per_POT_in_AV = 2.03981e-8;  // 2.26256e-8 is what James uses (just nu mu, in his condensed FV)
