@@ -18,10 +18,10 @@ NOTE: The workflow is near-identical to the ANNIE CC analysis, however please us
 -------------
 This script (stvPrep.C) prepares ANNIE MC PhaseIITree ntuples for univmake. It creates and adds flag branches used in tutorial_bin_config.txt from existing branches to the ntuple file. Also used to create correct flux_all and GENIE All branches.
 To use:
-1. 'hadd [target file] [source file 1] ...'
-2. copy/move target file outside of /pnfs/
-3. Edit target file path in stvPrep.C to match intended input
-4. 'root -l stvPrep.C'
+1. copy/move target file outside of /pnfs/
+2. Edit target file path in stvPrep.C to match intended input and the number of files you are looping over
+3. 'root -l stvPrep.C'
+4. 'hadd -f [target file] [source file 1] ...' to produce the final (single) root file
 
 **Notes**:
 -Input file path is hardcoded in stvPrep.C line 32
