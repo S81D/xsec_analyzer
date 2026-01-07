@@ -253,7 +253,7 @@ void stvPrep(){
         TFile *f = new TFile(file.c_str(),"UPDATE");
 		if (!f || f->IsZombie()) {
         	std::cerr << "ERROR: Could not open file" << std::endl;
-        	return;
+        	continue;
     	}
         
 		TTree *tTrig = (TTree*)f->Get("phaseIITriggerTree");
@@ -262,7 +262,7 @@ void stvPrep(){
         	std::cerr << "ERROR: Could not find one or both TTrees." << std::endl;
         	f->Close();
         	delete f;
-        	return;
+        	continue;
     	}
 
 
