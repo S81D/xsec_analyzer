@@ -1,100 +1,30 @@
 /*Author: S. Doran <doran@iastate.edu>
  *
- * Usage: ./NC_analyzer files.txt
+ * Usage: ./NC_analyzer
  *
  */
 
-// Modified from chi_square_cc0pi_christian.cpp for the NCQE (single bin) total flux integrated cross section
-
-#include <cmath>
 #include <iostream>
-#include <map>
-#include <memory>
-#include <string>
-#include <vector>
-#include <set>
-#include "TChain.h"
-#include "TFile.h"
-#include "TParameter.h"
-#include "TTree.h"
-#include "TVector3.h"
-#include "EventCategory.hh"
-#include "TreeUtils.hh"
-#include <fstream>
-#include <sstream>
-#include "TCanvas.h"
-#include "TH2D.h"
-#include "TROOT.h"
-#include "TStyle.h"
-#include "TH1D.h"
-#include "TGraph.h"
-#include "TAxis.h"
-#include "TApplication.h"
-#include "TPaveLabel.h"
-#include <cassert>
-#include <set>
-#include <vector>
-#include <TFile.h>
-#include <TH1D.h>
-#include <THStack.h>
-#include <TLegend.h>
-#include <TNtuple.h>
-#include <TPad.h>
-#include "TColor.h"
-#include "TInterpreter.h"
-#include <algorithm>
-#include "FilePropertiesManager.hh"
-#include "MCC9SystematicsCalculator.hh"
-#include "TMatrixT.h"
-#include "WienerSVDUnfolder.hh"
 #include <iomanip>
+#include <string> 
+#include <vector>
+#include <map>
+#include <cmath>
+#include "TFile.h"
 #include "TMatrixD.h"
-#include "TLatex.h"
-#include "RooStats/RooStatsUtils.h"
-#include "TDecompChol.h"
-#include "TDecompSVD.h"
-#include "includes/PlotUtils.hh"
+#include "TH1D.h"
+#include "MCC9SystematicsCalculator.hh"
 #include "includes/AnnieGeometryTools.hh"
 
+void XS_extractor() {
 
-// function will:
-// - extract event rates (CV universe, data, ext data)
-// - extract total stat + syst uncertainty on event rate
-// - extract fractional uncertainties
-// - compute cross section and full uncertainties
-
-
-// GENIE CV (truth) --> GENIE CV signal events
-// GENIE CV prediction --> for the reco
-
-// ExtBNB --> Off-beam background (Off-beam (ExtBNB))
-
-// OnBNB
-// - Fake data (GENIE CV)
-// - Fake data (NuWro)
-// - Data
-
-void Test_plot() {
-
-    std::cout << "\nExecuting Test_plot()..." << std::endl;
+    // 1 for the money
+    std::cout << "\n______________________________________________" << std::endl;
+    std::cout << "\nExecuting script..." << std::endl;
 
     // ....................................
     // Initialization
     //
-
-    gROOT->SetBatch(false);
-    gStyle->SetOptStat(0);
-
-    // PDF output file names
-    char text_title_pdf[2024];
-    char RootName[1024];
-	  sprintf(text_title_pdf, "NC_univmake_plots.pdf(");
-    std::string text_title_pdf_string(text_title_pdf);
-
-    // load file_properties.txt
-    auto& fpm = FilePropertiesManager::Instance();
-    fpm.load_file_properties( "file_properties.txt" );
-    std::cout << "\nfile_properties.txt loaded" << std::endl;
 
     // Systematics calculator object
     std::cout << "\nIntializing Systematics Calculator...\n" << std::endl;
@@ -102,325 +32,137 @@ void Test_plot() {
         "output.root",
         "systcalc.conf" );
     const auto &syst = *mcc9;
-    std::cout << "\nSystematics Calculator initialized" << std::endl;   
+    std::cout << "\nSystematics Calculator initialized" << std::endl;
 
+
+    // 2 for the show
     // ....................................
     // Execution
     //
     
     // binning
-    std::cout<<"\nNum true bins = "<< mcc9->true_bins_.size() << std::endl;
-    std::cout << "Num reco bins = " << mcc9->reco_bins_.size() << std::endl;
+    int num_true_bins = mcc9->true_bins_.size();
+    int num_reco_bins = mcc9->reco_bins_.size();
+    std::cout<<"\nNum true bins = "<< num_true_bins << std::endl;
+    std::cout << "Num reco bins = " << num_reco_bins << std::endl;
 
+
+    // Grab conversion factor for going from event rate --> XS
     std::cout << "\nPreparing conversion factor...\n" << std::endl;
-
-    // conversion factor
-    double total_pot = mcc9->total_bnb_data_pot_;
-    std::cout<<"Total POT: "<< total_pot << std::endl;
-    double integ_flux = integrated_numu_flux_in_FV( total_pot );
-    std::cout << "Integrated neutrino flux: " << integ_flux << std::endl;
-    double num_O = num_O_targets_in_FV();
-    std::cout << "N_targets: " << num_O << std::endl;
 
     // XS equation: (N-B) / [eff * N_targets * Phi]
     // conversion factor = N_targets * Phi [cm^2 / nucleon], then divide by 10^-38
-    double conv_factor = (num_O * integ_flux)/1e38;
-    std::cout << "conv_factor: " << conv_factor << std::endl;
+    double total_pot = mcc9->total_bnb_data_pot_;   // from Data / FakeData file
+    double integ_flux = integrated_numu_flux_in_FV( total_pot );
+    double num_Ar = num_O_targets_in_FV();
+    double conv_factor = (num_Ar * integ_flux)/1e38;
 
-
-    // from MicroBooNE (leave uncommented but good for validating we're doing it right)
-
-    //int num_bins = syst.get_num_signal_true_bins();
-
-    // Get CV universe
-    //const Universe* cv_univ = &syst.cv_universe();
-    //std::cout << "\nCV universe counts per bin:" << std::endl;
-    //for (int b = 0; b < num_bins; ++b) {
-    //    double true_evts = cv_univ->hist_true_->GetBinContent(b+1);
-    //    std::cout << "  " << true_evts << "\n";
-    //}
-
-    // Fake Data
-    //if (syst.fake_data_universe()) {
-    //    const Universe* fake_univ = syst.fake_data_universe().get();
-    //    for (int b = 0; b < num_bins; ++b) {
-    //        double fake_evts = fake_univ->hist_true_->GetBinContent(b+1);
-    //        std::cout << "  " << fake_evts << std::endl;
-    //    }
-    //}
-
-
-    TH1D* reco_bnb_hist = syst.data_hists_.at( NFT::kOnBNB ).get();      // reconstructed data (real or fake)
-    std::cout << "\nData loaded" << std::endl;
-
-    TH1D* reco_ext_hist = syst.data_hists_.at( NFT::kExtBNB ).get();     // reconstructed bkg data
-    std::cout << "Off-beam background data loaded" << std::endl;
-
-    std::cout << "-------------------------------" << std::endl;
-    std::cout << "Reco (BNB) counts: " << reco_bnb_hist->Integral() << std::endl;
-    std::cout << "Reco (EXT) counts: " << reco_ext_hist->Integral() << std::endl;
-
-    std::cout << "\nSubtracting background..." << std::endl;
-    syst.data_hists_.at( NFT::kOnBNB ).get()->Add(syst.data_hists_.at( NFT::kExtBNB ).get(),-1);   // new BNB data histogram = BNB - off-beam bkg
-    TH1D* after_subtraction = syst.data_hists_.at(NFT::kOnBNB).get();
-    std::cout << "Reco (BNB-EXT) counts: " << after_subtraction->Integral() << std::endl;
-
-
-    TH1D* genie_cv_truth = mcc9->cv_universe().hist_true_.get();        // GENIE CV (truth)
-    int num_true_bins = genie_cv_truth->GetNbinsX();
-    std::cout << "\nGENIE truth CV loaded" << std::endl;
-
-    TH1D* genie_cv_reco = mcc9->cv_universe().hist_reco_.get();         // GENIE CV (reco)
-    int num_reco_bins = genie_cv_reco->GetNbinsX();
-    std::cout << "GENIE reco CV loaded\n" << std::endl;
-
-
+    // covariance matrix and event rates
     std::cout << "\nGrabbing covariance matrix...\n" << std::endl;
 
-    auto true_signal = syst.get_cv_true_signal();     // true signal (CV)
-    auto reco_signal = syst.get_cv_reco_signal();     // reco signal (CV)
-    auto meas = syst.get_measured_events();           // reconstructed events from data (would be good to double check this is background subtracted!)
+    auto true_signal = syst.get_cv_true_signal();    // POT-scaled GENIE CV true signal (NC truth events)
+    auto reco_signal = syst.get_cv_reco_signal();    // POT-scaled GENIE (weighted) total reco
 
-    const auto& data_signal = meas.reco_signal_;     // reconstructed event count
-    const auto& data_covmat = meas.cov_matrix_;      // full covariance matrix (stat + syst)
+    auto meas = syst.get_measured_events();
+    const auto& data_signal = meas.reco_signal_;     // data signal estimator (how many reconstructed signal events we have)
+    const auto& data_covmat = meas.cov_matrix_;      // full covariance matrix (stat + syst) on observed reco events
 
-    // access individual covariance components to get the fractional uncertainties
+    // Evaluate the total and partial covariance matrices in reco space
     auto* matrix_map_ptr = syst.get_covariances().release();
     auto& matrix_map = *matrix_map_ptr;
 
+    // assumes single bin XS
+    double N_true_MC   = true_signal->operator()(0,0);    // GENIE truth NCQE events in FV
+    double N_reco_MC   = reco_signal->operator()(0,0);    // GENIE‐predicted reconstructed NCQE events
+    double N_data      = meas.reco_signal_->operator()(0,0);  // Estimator of reconstructed NCQE in data
+    double Var_data    = (*meas.cov_matrix_)(0,0);        // full covariance
+    double sigma_data  = std::sqrt(Var_data);             // total uncertainty
+
+
+    // correct N_data by the GENIE efficiency (takes you from reconstructed --> true); this is a simple scalar correction as its a 1D measurement
+    double eff = N_reco_MC / N_true_MC;
+
+    // XS = N / (eff * conv_factor)
+
+    // data cross section
+    double xs_data = N_data / (eff * conv_factor);
+    double xs_data_err = sigma_data / (eff * conv_factor);
+
+    // GENIE truth XS (with stat uncertainty)
+    double sigma_mc_truth = std::sqrt(
+        matrix_map.at("MCstats").cov_matrix_->GetBinContent(1,1)
+    );
+    double xs_genie_err = sigma_mc_truth / conv_factor;
+    double xs_genie = N_true_MC / conv_factor;
+
+
+    // Thanks Gemini for such a lovely print out table :)
+
+    // 3 to get ready
+    std::cout << "\n\n\n" << std::string(60, '=') << std::endl;
+    std::cout << std::setw(40) << std::left << " NEUTRAL CURRENT CROSS SECTION EXTRACTION" << std::endl;
+    std::cout << std::string(60, '=') << std::endl;
+
+    std::cout << "\n[1] INPUT STATISTICS & EFFICIENCY" << std::endl;
+    std::cout << std::setw(35) << std::left << "  - Total Data POT:" << std::scientific << std::setprecision(2) << total_pot << std::endl;
+    std::cout << std::setw(35) << std::left << "  - Integrated Flux (Phi):" << integ_flux << " cm^-2" << std::endl;
+    std::cout << std::setw(35) << std::left << "  - Targets in FV (N_t):" << num_Ar << std::endl;
     
-    // Print out event rates
-    std::cout << "  [signal + reco bin counts]\n";
-    for ( int t = 0; t < num_true_bins; ++t ) { 
-        double evts = 0.;
-        double error = 0.;
-        if ( t < num_true_bins - 1) {
-            ///////////////////////////////////////////////////
-            std::cout<<"\nCV_true_signal: "<<true_signal->operator()( t, 0 )<<std::endl;
-            std::cout<<"CV_reco_signal: "<<reco_signal->operator()( t, 0 )<<std::endl;
-            std::cout<<"Background subtracted data [reco_signal]: "<<data_signal->operator()( t, 0 )<<std::endl;
-            /////////////////////////////////////////////////         
-        }
-    }
-    // total error (stat + syst)
-    std::cout << "\n[Unfolded covariance: sqrt(diagonal elements)]\n";
-    for (int i = 0; i < data_covmat->GetNrows(); ++i) {
-            std::cout << "  Bin " << i << ": ±" << std::sqrt((*data_covmat)(i,i)) << "\n";   // total error on the reconstructed event rate
-    }
+    std::cout << std::fixed << std::setprecision(2);
+    std::cout << std::setw(35) << std::left << "  - GENIE True Signal (N_true): " << N_true_MC << std::endl;
+    std::cout << std::setw(35) << std::left << "  - GENIE Reco Signal (N_reco): " << N_reco_MC << std::endl;
+    std::cout << std::setw(35) << std::left << "  - GENIE Efficiency: " << (eff * 100.0) << " %" << std::endl;
+    std::cout << std::setw(35) << std::left << "  - Data Signal Estimator (N_data): " << N_data << " events" << std::endl;
 
-
-    std::cout << "\nFractional uncertainty breakdown:" << std::endl;
-    std::cout << "-------------------------------" << std::endl;
+    std::cout << "\n[2] UNCERTAINTY BREAKDOWN (on N_data)" << std::endl;
+    std::cout << std::string(50, '-') << std::endl;
+    std::cout << std::setw(25) << std::left << "  Source" << std::setw(12) << "Sigma" << std::setw(10) << "Frac Err" << std::endl;
+    std::cout << std::string(50, '-') << std::endl;
     
-    double N = data_signal->operator()(0,0);          // reconstructed event count
-    double N_err = std::sqrt((*data_covmat)(0,0));    // total error on reconstructed event count
-    double N_CV_reco = reco_signal->operator()(0,0);  // CV reco
-    double N_CV_true = true_signal->operator()(0,0);  // CV truth
-
-
-    // fractional uncertainties (for the reconstructed event rate)
-    // include variables like this to pull out individual uncertainties
-    double sigma_mcstat = 0.0;  // MC stat errors
-    for (const auto& pair : matrix_map) {
-
-        const std::string& name = pair.first;
-        const auto& cov = pair.second;
-
-        TH2D* covmat = cov.cov_matrix_.get();
-        double sigma = std::sqrt( covmat->GetBinContent(1,1) );
-        std::cout << name << " sigma = " << sigma << std::endl;
-        double frac  = (N > 0.) ? sigma / N : 0.;
-
-        std::cout << name << " frac err = "
-                << frac * 100. << "%\n";
-
-        // MC statistical uncertainty
-        if (pair.first == "MCstats") {
-            TH2D* covmat = pair.second.cov_matrix_.get();
-            sigma_mcstat = std::sqrt( covmat->GetBinContent(1,1) );
-        }
+    for (const auto& [name, cov] : matrix_map) {
+        double sigma = std::sqrt(cov.cov_matrix_->GetBinContent(1,1));
+        double frac = (N_data > 0) ? (sigma / N_data) * 100.0 : 0.0;
+        
+        std::cout << "  " << std::setw(23) << std::left << name 
+                  << std::setw(12) << std::setprecision(3) << sigma 
+                  << std::setprecision(1) << frac << " %" << std::endl;
     }
+    std::cout << std::string(50, '-') << std::endl;
+    std::cout << "  " << std::setw(23) << "TOTAL UNCERTAINTY" 
+              << std::setw(12) << sigma_data 
+              << std::setprecision(1) << (sigma_data/N_data)*100.0 << " %" << std::endl;
 
+    std::cout << "\n[3] CROSS SECTION EQUATION\n" << std::endl;
+    std::cout << "      N_data" << std::endl;
+    std::cout << "XS = ------------------------" << std::endl;
+    std::cout << "      eps * N_t * Phi" << std::endl;
+    
+    // Switch to scientific just for this substitution to handle large Nt and Phi
+    std::cout << "\n      " << std::scientific << std::setprecision(3) << N_data << std::endl;
+    std::cout << "XS = ----------------------------------------------------" << std::endl;
+    std::cout << "      (" << eff << ") * (" << num_Ar << ") * (" << integ_flux << ")" << std::endl;
+    
+    // Switch back to fixed for the Final Results section
+    std::cout << std::fixed;
 
-    // now we can calculate a simple scalar efficiency for our XS calculation
-    // No unfolding required for single bin, total cross section (unfolding does give us the same signal counts though which is consistent)
-    double eff =  N_CV_reco / N_CV_true;   // use reco CV / truth CV (ordinarily this is taken from the smearing)
-    std::cout << "\nefficiency (CV reco / CV true) = (" << N_CV_reco << "/" << N_CV_true << ") = " << eff << std::endl;
+    std::cout << "\n" << std::string(60, '=') << std::endl;
+    std::cout << " FINAL RESULTS [10^-38 cm^2 / Oxygen]" << std::endl;
+    std::cout << std::string(60, '-') << std::endl;
+    
+    // Convert to 10^-38 units for display if desired, or keep raw
+    std::cout << "  DATA  XS: " << std::fixed << std::setprecision(3) << xs_data << " +/- " << xs_data_err << std::endl;
+    std::cout << "  GENIE XS: " << xs_genie << " +/- " << xs_genie_err << " (MC stat)" << std::endl;
+    
+    double pull = (xs_data - xs_genie) / xs_data_err;
+    std::cout << "  Data/MC Ratio: " << (xs_data / xs_genie) << std::endl;
+    std::cout << "  Agreement:     " << std::abs(pull) << " sigma" << std::endl;
+    std::cout << std::string(60, '=') << "\n" << std::endl;
 
-
-    // XS equation: (N-B) / [eff * N_targets * Phi]
-    // conversion factor = N_targets * Phi [cm^2 / nucleon], then divide by 10^-38
-
-    // calculate cross section from data (already background subtracted)
-    double val_xsec = N / (eff * conv_factor);
-    double err_xsec = N_err / (eff * conv_factor);
-
-    // calculate CV cross section for closure / validation
-    // "Does the measurement machinery reproduce the known truth within its own uncertainties?"
-    double val_xsec_CV = N_CV_reco / (eff * conv_factor);
-    double err_xsec_CV_MCstat = sigma_mcstat / (eff * conv_factor);    // MC stat only
-
-    std::cout << "\nXS calculated -----------------" << std::endl;
-    std::cout << "Data cross section = " << val_xsec << " ± " << err_xsec << " cm^2 / oxygen\n" << std::endl;
-    std::cout << "GENIE CV cross section = " << val_xsec_CV << " ± " << err_xsec_CV_MCstat << " (MC stat only) cm^2 / oxygen\n" << std::endl;
-
-
-    //
-    // ******************************************
-    // Plot
-    //
-    std::cout << "\n\nPlotting -----------------\n" << std::endl;
-
-    // ExtBNB vs onBNB
-    // reconstructed event rate plot (reco CV vs reco data)
-    // cross section plot
-
-    // define bin edges for plotting histograms
-    //std::vector<double> nbins = {0, 1};   // bin edges
-
-    // PDF canvas
-    TCanvas* c4 = new TCanvas("c4");
-	  c4->Print(text_title_pdf); 
-
-
-    // .........................
-    // ExtBNB vs onBNB
-    Draw_HIST(
-        reco_bnb_hist,
-        "Fake data (GENIE CV)",
-        reco_ext_hist,
-        "Off-Beam background",
-        "",
-        "",
-        "Events",
-        false,  // norm area
-        true,   // set grid
-        false,  // bin width norm
-        -99,
-        c4,
-        text_title_pdf_string);
-
-
-    // .........................
-    // ExtBNB vs onBNB
-    Draw_HIST(
-        reco_bnb_hist,
-        "Fake data (GENIE CV)",
-        genie_cv_reco,
-        "GENIE CV Prection",
-        "",
-        "",
-        "Events",
-        false,  // norm area
-        true,   // set grid
-        false,  // bin width norm
-        -99,
-        c4,
-        text_title_pdf_string);
-
-
-    // .........................
-    // Cross section
-
-    TH1D* h_xsec_data = new TH1D(
-        "h_xsec_data",
-        "; ;#sigma_{#nu NCQE} [10^{-38} cm^{2} / oxygen]",
-        1, 0.5, 1.5
-    );
-
-    TH1D* h_xsec_cv = new TH1D(
-        "h_xsec_cv",
-        "; ;#sigma_{#nu NCQE} [10^{-38} cm^{2} / oxygen]",
-        1, 0.5, 1.5
-    );
-
-    // Data
-    h_xsec_data->SetBinContent(1, val_xsec);
-    h_xsec_data->SetBinError(1, err_xsec);
-    h_xsec_data->SetMarkerStyle(20);
-    h_xsec_data->SetMarkerSize(1.4);
-    h_xsec_data->SetLineColor(kBlack);
-    h_xsec_data->SetLineWidth(2);
-    h_xsec_data->SetStats(0);
-    h_xsec_data->GetXaxis()->SetTickLength(0);
-    h_xsec_data->GetXaxis()->SetLabelSize(0);
-
-
-    // GENIE CV band (MC stat only)
-    double x_min = 0.5;
-    double x_max = 1.5;
-    double y_min = val_xsec_CV - err_xsec_CV_MCstat;
-    double y_max = val_xsec_CV + err_xsec_CV_MCstat;
-
-    TLine* genie_cv_line = new TLine(
-        x_min,
-        val_xsec_CV,
-        x_max,
-        val_xsec_CV
-    );
-    genie_cv_line->SetLineColor(kAzure);
-    genie_cv_line->SetLineWidth(2);
-    genie_cv_line->SetLineStyle(2);  // dashed (optional)
-
-    // +/- MC stat error band
-    TLine* genie_cv_line_up = new TLine(
-        x_min, val_xsec_CV + err_xsec_CV_MCstat,
-        x_max, val_xsec_CV + err_xsec_CV_MCstat
-    );
-
-    TLine* genie_cv_line_dn = new TLine(
-        x_min, val_xsec_CV - err_xsec_CV_MCstat,
-        x_max, val_xsec_CV - err_xsec_CV_MCstat
-    );
-
-    genie_cv_line_up->SetLineColor(kAzure);
-    genie_cv_line_dn->SetLineColor(kAzure);
-
-    genie_cv_line_up->SetLineWidth(2);
-    genie_cv_line_dn->SetLineWidth(2);
-
-    genie_cv_line_up->SetLineStyle(2);
-    genie_cv_line_dn->SetLineStyle(2);
-
-    TCanvas* c_xs = new TCanvas("c_xs", "NCQE Cross Section", 600, 500);
-    h_xsec_data->GetYaxis()->SetTitleOffset(1.3);
-    h_xsec_data->GetXaxis()->SetLabelSize(0);  // hide x labels (single bin)
-
-    double y_min_plot = 0.5;
-    double y_max_plot = 7.0;
-    h_xsec_data->SetMinimum(y_min_plot);
-    h_xsec_data->SetMaximum(y_max_plot);
-
-    h_xsec_data->Draw("E1");
-    //h_xsec_cv->Draw("E1 SAME");
-    genie_cv_line_up->Draw("SAME");
-    genie_cv_line_dn->Draw("SAME");
-    h_xsec_data->Draw("E1 SAME");  // redraw point on top
-    genie_cv_line->Draw("SAME");
-
-    TLegend* leg = new TLegend(0.55, 0.70, 0.85, 0.88);
-    leg->SetBorderSize(0);
-    leg->SetFillStyle(0);
-
-    leg->AddEntry(h_xsec_data, "Fake BNB Data (stat. #oplus syst.)", "lep");
-    //leg->AddEntry(h_xsec_cv,   "GENIE CV (MC stat only)",     "lep");
-    leg->AddEntry(genie_cv_line, "GENIE CV Truth (MC stat. only)",     "l");
-
-    leg->Draw();
-    c_xs->SaveAs(text_title_pdf);
-
-
-
-    std::cout<<"\nSaving PDF...\n"<<std::endl; 
-
-  	sprintf(text_title_pdf, "NC_univmake_plots.pdf)");
-  	c4->Print(text_title_pdf);
-    std::cout<<"\n"; 
 }
 
 
-// main function
+// and 4 to go
 int main(int argc, char* argv[]) {
-   Test_plot();
+   XS_extractor();
    return 0;
 }
