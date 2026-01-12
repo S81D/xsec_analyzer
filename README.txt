@@ -8,10 +8,10 @@ NOTE: The workflow is near-identical to the ANNIE CC analysis, however please us
 1. Enter the ANNIE ToolAnalysis container: './start_singularity.sh'
 2. Set up the environment: 'source setup_stv.sh'
 3. Prepare input files (if necessary): 'root -l stvPrep.C'
-4. Clean and compile: 'make clean' and 'make'
-5. Univmake: './univmake files_to_process.txt tutorial_bin_config.txt output.root'
-6. Systematic uncertainty: 'root -l tutorial_slice_plots.C'
-7. XSec, Event Rate Plots, and Systematic Uncertainty: ./NC_analyzer
+4. hadd files together to produce the final (single) MC / data root file (if needed): 'hadd -f [target file] [source file 1] ...'
+5. Clean and compile: 'make clean' and 'make'
+6. Univmake: './univmake files_to_process.txt tutorial_bin_config.txt output.root'
+7. XSec, Event Rates, and Systematic (+ Fractional) Uncertainty: ./NC_analyzer
 
 -------------
 ***stvPrep***
@@ -31,6 +31,7 @@ To use:
 -Currently only works with MC files, not real data files. Will need updates in future
 -Feel free to add extra flag/category branches! Please document any additions
 -Does not check if additional branches already exist
+-If comparing MC to Fake Data (MC), make sure to strip out ALL the weights. You can do this via `root -l stripWeights.C`. Modify the script accordingly.
 
 --------------
 ***DVShiftE***
