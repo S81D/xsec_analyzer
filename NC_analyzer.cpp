@@ -15,6 +15,7 @@
 #include "TH1D.h"
 #include "MCC9SystematicsCalculator.hh"
 #include "includes/AnnieGeometryTools.hh"
+#include "WienerSVDUnfolder.hh"
 
 void XS_extractor() {
 
@@ -34,6 +35,11 @@ void XS_extractor() {
     const auto &syst = *mcc9;
     std::cout << "\nSystematics Calculator initialized" << std::endl;
 
+    std::cout << "\nIntializing File Properties Manager...\n" << std::endl;
+	  auto& fpm = FilePropertiesManager::Instance();
+    fpm.load_file_properties( "file_properties.txt" );
+    std::cout << "\nFile Properties Manager initialized" << std::endl;
+
 
     // 2 for the show
     // ....................................
@@ -52,111 +58,135 @@ void XS_extractor() {
 
     // XS equation: (N-B) / [eff * N_targets * Phi]
     // conversion factor = N_targets * Phi [cm^2 / nucleon], then divide by 10^-38
-    double total_pot = mcc9->total_bnb_data_pot_;   // from Data / FakeData file
+    double total_pot = mcc9->total_bnb_data_pot_;   // from Data (FakeData) file
     double integ_flux = integrated_numu_flux_in_FV( total_pot );
     double num_Ar = num_O_targets_in_FV();
     double conv_factor = (num_Ar * integ_flux)/1e38;
 
+
     // covariance matrix and event rates
     std::cout << "\nGrabbing covariance matrix...\n" << std::endl;
 
-    auto true_signal = syst.get_cv_true_signal();    // POT-scaled GENIE CV true signal (NC truth events)
-    auto reco_signal = syst.get_cv_reco_signal();    // POT-scaled GENIE (weighted) total reco
-
-    auto meas = syst.get_measured_events();
-    const auto& data_signal = meas.reco_signal_;     // data signal estimator (how many reconstructed signal events we have)
-    const auto& data_covmat = meas.cov_matrix_;      // full covariance matrix (stat + syst) on observed reco events
-
     // Evaluate the total and partial covariance matrices in reco space
-    auto* matrix_map_ptr = syst.get_covariances().release();
-    auto& matrix_map = *matrix_map_ptr;
-
-    // assumes single bin XS
-    double N_true_MC   = true_signal->operator()(0,0);    // GENIE truth NCQE events in FV
-    double N_reco_MC   = reco_signal->operator()(0,0);    // GENIE‐predicted reconstructed NCQE events
-    double N_data      = meas.reco_signal_->operator()(0,0);  // Estimator of reconstructed NCQE in data
-    double Var_data    = (*meas.cov_matrix_)(0,0);        // full covariance
-    double sigma_data  = std::sqrt(Var_data);             // total uncertainty
+    auto matrix_map = syst.get_covariances();
 
 
-    // correct N_data by the GENIE efficiency (takes you from reconstructed --> true); this is a simple scalar correction as its a 1D measurement
-    double eff = N_reco_MC / N_true_MC;
+	  std::cout << "\nStarting the unfolding -----------------" << std::endl;
 
-    // XS = N / (eff * conv_factor)
+    // Perform background subtraction and unfolding to get a measurement of event
+    // counts in (regularized) true space
+    std::unique_ptr< Unfolder > unfolder (new WienerSVDUnfolder( true, WienerSVDUnfolder::RegularizationMatrixType::kFirstDeriv ) );
+    auto result = unfolder->unfold( *mcc9 );
 
-    // data cross section
-    double xs_data = N_data / (eff * conv_factor);
-    double xs_data_err = sigma_data / (eff * conv_factor);
+    // unfolding diagnostics
+    TMatrixD* signal = result.unfolded_signal_.get();
+    TMatrixD* S = result.response_matrix_.get();
+    TMatrixD* cov = result.cov_matrix_.get();
+    std::cout << "\n\n  === Unfolding Output ===\n\n";
 
-    // GENIE truth XS (with stat uncertainty)
-    double sigma_mc_truth = std::sqrt(
-        matrix_map.at("MCstats").cov_matrix_->GetBinContent(1,1)
-    );
-    double xs_genie_err = sigma_mc_truth / conv_factor;
-    double xs_genie = N_true_MC / conv_factor;
-
-
-    // Thanks Gemini for such a lovely print out table :)
-
-    // 3 to get ready
-    std::cout << "\n\n\n" << std::string(60, '=') << std::endl;
-    std::cout << std::setw(40) << std::left << " NEUTRAL CURRENT CROSS SECTION EXTRACTION" << std::endl;
-    std::cout << std::string(60, '=') << std::endl;
-
-    std::cout << "\n[1] INPUT STATISTICS & EFFICIENCY" << std::endl;
-    std::cout << std::setw(35) << std::left << "  - Total Data POT:" << std::scientific << std::setprecision(2) << total_pot << std::endl;
-    std::cout << std::setw(35) << std::left << "  - Integrated Flux (Phi):" << integ_flux << " cm^-2" << std::endl;
-    std::cout << std::setw(35) << std::left << "  - Targets in FV (N_t):" << num_Ar << std::endl;
-    
-    std::cout << std::fixed << std::setprecision(2);
-    std::cout << std::setw(35) << std::left << "  - GENIE True Signal (N_true): " << N_true_MC << std::endl;
-    std::cout << std::setw(35) << std::left << "  - GENIE Reco Signal (N_reco): " << N_reco_MC << std::endl;
-    std::cout << std::setw(35) << std::left << "  - GENIE Efficiency: " << (eff * 100.0) << " %" << std::endl;
-    std::cout << std::setw(35) << std::left << "  - Data Signal Estimator (N_data): " << N_data << " events" << std::endl;
-
-    std::cout << "\n[2] UNCERTAINTY BREAKDOWN (on N_data)" << std::endl;
-    std::cout << std::string(50, '-') << std::endl;
-    std::cout << std::setw(25) << std::left << "  Source" << std::setw(12) << "Sigma" << std::setw(10) << "Frac Err" << std::endl;
-    std::cout << std::string(50, '-') << std::endl;
-    
-    for (const auto& [name, cov] : matrix_map) {
-        double sigma = std::sqrt(cov.cov_matrix_->GetBinContent(1,1));
-        double frac = (N_data > 0) ? (sigma / N_data) * 100.0 : 0.0;
-        
-        std::cout << "  " << std::setw(23) << std::left << name 
-                  << std::setw(12) << std::setprecision(3) << sigma 
-                  << std::setprecision(1) << frac << " %" << std::endl;
+    if (signal) {
+      std::cout << "  [Unfolded signal: true bin counts]\n";
+      for (int i = 0; i < signal->GetNrows(); ++i) {
+        std::cout << "    True bin " << i << ": " << (*signal)(i, 0) << " events\n";
+      }
+    } else {
+      std::cout << "  [ERROR] unfolded_signal_ is null\n";
     }
-    std::cout << std::string(50, '-') << std::endl;
-    std::cout << "  " << std::setw(23) << "TOTAL UNCERTAINTY" 
-              << std::setw(12) << sigma_data 
-              << std::setprecision(1) << (sigma_data/N_data)*100.0 << " %" << std::endl;
 
-    std::cout << "\n[3] CROSS SECTION EQUATION\n" << std::endl;
-    std::cout << "      N_data" << std::endl;
-    std::cout << "XS = ------------------------" << std::endl;
-    std::cout << "      eps * N_t * Phi" << std::endl;
-    
-    // Switch to scientific just for this substitution to handle large Nt and Phi
-    std::cout << "\n      " << std::scientific << std::setprecision(3) << N_data << std::endl;
-    std::cout << "XS = ----------------------------------------------------" << std::endl;
-    std::cout << "      (" << eff << ") * (" << num_Ar << ") * (" << integ_flux << ")" << std::endl;
-    
-    // Switch back to fixed for the Final Results section
-    std::cout << std::fixed;
+    if (S) {
+      std::cout << "  [Smearceptance matrix S (Reco x True)]\n";      // efficiency
+      for (int i = 0; i < S->GetNrows(); ++i) {
+        for (int j = 0; j < S->GetNcols(); ++j) {
+          std::cout << "    S(" << i << "," << j << ") = " << (*S)(i,j) << "\n";
+        }
+      }
+    } else {
+      std::cout << "  [ERROR] response_matrix_ (smearceptance) is null\n";
+    }
 
-    std::cout << "\n" << std::string(60, '=') << std::endl;
-    std::cout << " FINAL RESULTS [10^-38 cm^2 / Oxygen]" << std::endl;
-    std::cout << std::string(60, '-') << std::endl;
-    
-    // Convert to 10^-38 units for display if desired, or keep raw
-    std::cout << "  DATA  XS: " << std::fixed << std::setprecision(3) << xs_data << " +/- " << xs_data_err << std::endl;
-    std::cout << "  GENIE XS: " << xs_genie << " +/- " << xs_genie_err << " (MC stat)" << std::endl;
-    
-    double pull = (xs_data - xs_genie) / xs_data_err;
-    std::cout << "  Data/MC Ratio: " << (xs_data / xs_genie) << std::endl;
-    std::cout << "  Agreement:     " << std::abs(pull) << " sigma" << std::endl;
-    std::cout << std::string(60, '=') << "\n" << std::endl;
+    if (cov) {
+      std::cout << "  [Unfolded covariance: sqrt(diagonal elements)]\n";
+      for (int i = 0; i < cov->GetNrows(); ++i) {
+        std::cout << "    Bin " << i << ": ±" << std::sqrt((*cov)(i,i)) << "\n";
+      }
+    } else {
+      std::cout << "  [ERROR] cov_matrix_ is null\n";
+    }
+
+    // end diagnostics
+
+
+    std::cout << "\nUnfolding completed -----------------" << std::endl;
+    std::cout << "\nPost-processing covariance matrices..\n" << std::endl;
+
+    // The Error Propagation Matrix (A_c) tells us how a shift in Reco-space
+    // translates to a shift in the Unfolded Truth-space.
+    const TMatrixD& err_prop = *result.err_prop_matrix_;
+    TMatrixD err_prop_tr( TMatrixD::kTransposed, err_prop );
+
+    // This map will store your unfolded Truth-space systematic matrices
+    std::map< std::string, std::unique_ptr<TMatrixD> > unfolded_cov_matrix_map;
+
+    for ( const auto& matrix_pair : *matrix_map ) {
+        const std::string& matrix_key = matrix_pair.first;
+        // This is the Reco-space matrix (e.g., "flux", "genie")
+        auto temp_cov_mat = matrix_pair.second.get_matrix();
+
+        // Matrix multiplication: Cov_truth = A_c * Cov_reco * A_c^T
+        TMatrixD temp_mat( *temp_cov_mat, TMatrixD::EMatrixCreatorsOp2::kMult, err_prop_tr );
+        unfolded_cov_matrix_map[ matrix_key ] = std::make_unique< TMatrixD >(
+            err_prop, TMatrixD::EMatrixCreatorsOp2::kMult, temp_mat );
+
+        // Print the breakdown
+        double diag_val = (*unfolded_cov_matrix_map[matrix_key])(0,0);
+        double fractional_err = std::sqrt(diag_val) / (*signal)(0,0);
+        
+        std::cout << "  Systematic [" << std::setw(15) << matrix_key << "]: ±" 
+                  << std::sqrt(diag_val) << " events (" 
+                  << fractional_err * 100.0 << "%)" << std::endl;
+    }
+
+    // Final Cross Section Calculation
+    double val_xsec = (*signal)(0,0) / conv_factor; 
+    double err_xsec = std::sqrt((*cov)(0,0)) / conv_factor;
+
+    std::cout << "\n\n================================================" << std::endl;
+    std::cout << "FINAL MEASUREMENT:" << std::endl;
+    std::cout << "Cross Section: " << val_xsec << " x 10^-38 cm^2" << std::endl;
+    std::cout << "Total Error:   ±" << err_xsec << " (" << (err_xsec/val_xsec)*100.0 << "%)" << std::endl;
+    std::cout << "================================================" << std::endl;
+
+
+    // 3. VALIDATION STANZA (Truth Comparison)
+    std::cout << "\n\n--- Validation Stanza ---\n" << std::endl;
+
+    // This gets the 1D projection used for the unfolding input
+    TH1D* reco_data_hist = mcc9->cv_universe().hist_reco_.get(); 
+    std::cout << "Raw selected data events (reco bins): " << reco_data_hist->Integral() << std::endl;
+
+    // Get the GENIE CV Truth prediction (The "MicroBooNETune" equivalent)
+    const Universe& cv_univ = mcc9->cv_universe();
+    std::cout << "GENIE truth prediction (true bins):\n" << std::endl;
+    for (int b = 0; b < num_true_bins; ++b) {
+        // hist_true_ contains the actual number of signal events predicted in the FV
+        double genie_pred = cv_univ.hist_true_->GetBinContent( b + 1 );
+        double genie_err  = cv_univ.hist_true_->GetBinError(b + 1);
+        std::cout << "  True bin " << b << ": " << genie_pred << " ± " << genie_err << " events" << std::endl;
+
+        if (b == 0) {  // if true signal, we want the predicted XS
+          double model_xs     = genie_pred / conv_factor;
+          double model_xs_err = genie_err / conv_factor;
+          // Calculate the "True" Cross Section from the model to see if they match
+          std::cout << "-------------------------------------------------------" << std::endl;
+          std::cout << "  >>> GENIE MODEL PREDICTION <<<" << std::endl;
+          std::cout << "  Events (CV): " << genie_pred << " +/- " << genie_err << " (MC Stats)" << std::endl;
+          std::cout << "  Model XS:    " << model_xs << " +/- " << model_xs_err << " [10^-38 cm^2]" << std::endl;
+          std::cout << "-------------------------------------------------------\n" << std::endl;
+        }
+    }
+
+    // end function
+    std::cout << "\n" <<std::endl;
 
 }
 
@@ -166,3 +196,5 @@ int main(int argc, char* argv[]) {
    XS_extractor();
    return 0;
 }
+
+// done
