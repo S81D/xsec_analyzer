@@ -283,11 +283,6 @@ void stvPrep(){
 
 		// all the existing weight branches
 		std::vector<double>* All0_weight = nullptr;
-		std::vector<double>* All1_weight = nullptr;
-		std::vector<double>* All2_weight = nullptr;
-		std::vector<double>* All3_weight = nullptr;
-		std::vector<double>* All4_weight = nullptr;
-		std::vector<double>* All5_weight = nullptr;
 
 		std::vector<double>* flux_horncurrent = nullptr;
 		std::vector<double>* flux_expskin = nullptr;
@@ -322,10 +317,6 @@ void stvPrep(){
 		
 		//Weights
     	tTrig->SetBranchAddress("weight_All0_UBGenie",&All0_weight);
-    	tTrig->SetBranchAddress("weight_All1_UBGenie",&All1_weight);
-    	tTrig->SetBranchAddress("weight_All2_UBGenie",&All2_weight);
-    	tTrig->SetBranchAddress("weight_All3_UBGenie",&All3_weight);
-    	tTrig->SetBranchAddress("weight_All4_UBGenie",&All4_weight);
     	tTrig->SetBranchAddress("weight_horncurrent_FluxUnisim",&flux_horncurrent);
     	tTrig->SetBranchAddress("weight_expskin_FluxUnisim",&flux_expskin);
     	tTrig->SetBranchAddress("weight_pioninexsec_FluxUnisim",&flux_pionine);
@@ -614,10 +605,6 @@ void stvPrep(){
 
 			//XSec weight appendage (what MicroBooNE uses)
         	All_weight.insert(All_weight.end(), All0_weight->begin(), All0_weight->end());
-			All_weight.insert(All_weight.end(), All1_weight->begin(), All1_weight->end());
-			All_weight.insert(All_weight.end(), All2_weight->begin(), All2_weight->end());
-			All_weight.insert(All_weight.end(), All3_weight->begin(), All3_weight->end());
-			All_weight.insert(All_weight.end(), All4_weight->begin(), All4_weight->end());
 
 			// lump all flux uncertainties together
 			for(int j = 0; j < 1000; j++){
