@@ -144,10 +144,13 @@ inline double num_O_targets_in_FV() {
 inline double integrated_numu_flux_in_FV( double pot ) {
   //
   // for NC, we must include both numu and nue --> the value below is the combined flux
-  constexpr double numu_per_cm2_per_POT_in_AV = 2.03981e-8;  // 2.26256e-8 is what James uses (just nu mu, in his condensed FV)
-                                                             // derived values for me:          
+  constexpr double numu_per_cm2_per_POT_in_AV = 2.08722e-8;  // 2.26256e-8 is what James uses (just nu mu, in his condensed FV)
+                                                             // derived values for me (r < 1m, |y| < 1.5m:          
                                                              // Integrated νμ flux: 2.028605343287099e-08 per POT per cm^2
                                                              // Integrated νe flux: 1.120153603922698e-10 per POT per cm^2
+                                                             // updated FV (r < 0.7m, |y| < 1.0m:          
+                                                             // Integrated νμ flux: 2.075647937553975e-08 per POT per cm^2
+                                                             // Integrated νe flux: 1.1571293632036711e-10 per POT per cm^2
   double flux = pot * numu_per_cm2_per_POT_in_AV; // numu / cm^2
   return flux;
 }
