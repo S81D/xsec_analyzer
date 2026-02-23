@@ -16,10 +16,10 @@
  double FV_Z_MAX =  966.8;
 //
 ////ANNIE FV Boundaries
- double FV_RAD = 100.0;
+ double FV_RAD = 70.0;
 //
- double A_FV_Y_MIN = -150.0;
- double A_FV_Y_MAX =  150.0;
+ double A_FV_Y_MIN = -100.0;
+ double A_FV_Y_MAX =  100.0;
 //
  double A_Z_CTR = 168.1; //Z center of tank
 
