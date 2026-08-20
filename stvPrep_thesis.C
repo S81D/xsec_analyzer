@@ -67,13 +67,32 @@ bool External(double x, double y, double z){
 
 // bunch cutting (whether the time was within the bunches)
 bool bunch_cutting(double cluster_time) {
-    const double bunch_sigma = 3.5;    // determined based on MC bunch width (update to include BRF fitting)
-    const double avg_diff = 0.785;     // weighted avg between NCQE and CCinc bunch positions
+    const double bunch_sigma = 3.59;    // determined based on MC bunch width (update to include BRF fitting)
+    const double avg_diff = 0.5081;     // weighted avg between NCQE and CCinc bunch positions
+
+	// bunch variation (+/- 0.5ns)
+	//const double avg_diff = -0.5081;
 
 	// CCinc centers extracted from bunch fitting (update if needed)
     static const double CC_centers[] = {
-		31.080241331783608, 49.86887398044972, 68.93296122138285, 87.99776529989828, 106.92835749210317, 125.6744929249585, 144.55074229641292, 163.55533862061978, 182.42054838303565, 201.3975667029726, 220.45443080446125, 239.35228866298255, 258.3293431484236, 277.16438785242855, 296.09720802748456, 315.07114394995256, 334.03324394912823, 352.9587576490855, 371.8466462675708, 390.79194334882425, 409.63044291467685, 428.65567092584, 447.6549629320083, 466.57352377409313, 485.51073635902037, 504.4792057236341, 523.4956574718212, 542.3691320377058, 561.1099950563898, 580.2327318476815, 599.219010807661, 618.1019306658702, 636.9854167698654, 655.951836439576, 674.9453451130016, 693.8124506487408, 712.671642937589, 731.7183509540064, 750.6217703640303, 769.543817927331, 788.6698605766949, 807.5171007720303, 826.3570279447015, 845.2861546004002, 864.1547464834093, 883.1283566641179, 902.1248645210509, 920.9586744177927, 939.8944893020667, 958.8604582494381, 977.9115116970311, 996.7815728120514, 1015.6916816004485, 1034.593675449364, 1053.6218603405582, 1072.4974885887596, 1091.536793059606, 1110.3787443226672, 1129.5039961808134, 1148.208660322583, 1167.3275787742382, 1186.2991638425285, 1204.9871507926803, 1224.054624008908, 1242.917134430439, 1261.9481194256011, 1280.8989737693325, 1299.7479318121127, 1318.6949768605764, 1337.6816835239597, 1356.5741533701105, 1375.6189574036052, 1394.2645061208234, 1413.405519458969, 1432.3530855833285, 1451.3251805522368, 1470.3698038901168, 1489.1695033456674, 1508.0806190832418, 1526.995246745324, 1546.0600858753075
-    	};
+    				30.55620074944292, 50.23596632813184, 68.03027546306257, 87.65149609251257, 106.38480577249247,
+                    125.28116343989417, 144.32309666797107, 163.1397586239191, 181.97778394194054, 201.06274310271073,
+                    220.16343853423476, 238.30288809166953, 258.38514881200354, 276.8146398611303, 296.0884356855441,
+                    314.35016323142816, 333.72419652049575, 352.9437944077438, 371.260196759933, 390.08407553949974,
+                    409.44913114396746, 427.94715055258985, 447.770917943728, 465.9339836950206, 484.7186644716273,
+                    504.4287698808072, 523.0814143742606, 542.3141201678939, 561.2254420066273, 579.8111323601904,
+                    597.9945900965694, 618.0700927506651, 636.5621477504429, 655.7874418315001, 674.4764151744993,
+                    693.6905256979796, 712.4819567023824, 731.0362230741698, 750.2744038347329, 769.2102243656747,
+                    788.2453849590231, 807.0011262101622, 825.9067358626738, 845.3047059731147, 864.0653260882543,
+                    883.0323070032683, 901.6429155761502, 920.6808374077715, 939.6712240835648, 958.6990235603214,
+                    977.72856819438, 996.2787338241341, 1015.08703056768, 1034.3375283354696, 1053.9759092673044,
+                    1072.052984198524, 1091.129322973113, 1110.3389344568238, 1128.965140612168, 1148.3985550156349,
+                    1166.982403872106, 1186.220604492118, 1204.4016122615021, 1223.770899436999, 1242.691800785879,
+                    1261.9422162459668, 1280.3202276072477, 1299.702530449622, 1318.214516959161, 1337.6134384701843,
+                    1356.5308849686603, 1375.0603202255497, 1393.91335999822, 1413.0147004160135, 1431.9961602521892,
+                    1451.5391995383018, 1470.035773429933, 1488.7824718348304, 1507.6311809765648, 1526.7701548484445,
+                   	1545.2663160965799
+	};
 
     const int N = sizeof(CC_centers) / sizeof(double);
 
@@ -203,14 +222,11 @@ void stvPrep(){
 	//
 
 	// MC adjusted prompt window and spill end times
-	const double HALF_BUNCH_T = 18.936/2; 
-	const double FINAL_MC_BUNCH = 1546.06;
-	const double FIRST_MC_BUNCH = 31.08;
-	const double BUNCH_START = FIRST_MC_BUNCH  - 0.785 - 3.5;     // start of the bunches
-	const double BUNCH_END = FINAL_MC_BUNCH - 0.785 + 3.5;        // end of the bunches (full spill)
-	const double FINAL_BUNCH_DATA = 1710.71;                      // final bunch position in the data
-	const double data_time_to_end_of_buffer = 2000 - FINAL_BUNCH_DATA;       // time difference from end of prompt window to final bunch
-	const double time_to_prompt_end = data_time_to_end_of_buffer + FINAL_MC_BUNCH;  // equivalent timing cut to the end of the MC prompt 2us window
+	const double bunch_time_cutoff = 1560.0;
+	const double time_to_prompt_end = 258.0;   // based on data
+	const double prompt_window_end = bunch_time_cutoff + time_to_prompt_end;
+
+	//const double DIRT_SCALE = 0.18;   // based on sideband
 
 	// ********************************
 	// load libraries (modify this path to any compiled toolanalysis directory)
@@ -219,7 +235,7 @@ void stvPrep(){
 
 
 	// loop for executing over N files
-	for (int i = 3089; i < 4000; ++i) {       // change 1000 to N to match N input files
+	for (int i = 0; i < 4000; ++i) {       // change 1000 to N to match N input files
 		std::string file =
 			"/exp/annie/data/users/doran/GENIE_reweight_MC_ToolChain/stv/MC_" + 
 			std::to_string(i) + ".root";   // modify path if needed
@@ -356,8 +372,8 @@ void stvPrep(){
     	for (Long64_t i = 0; i < nClusterEntries; ++i) {
         	tCluster->GetEntry(i);
         
-        	// Prompt window check (within the 2us window)
-        	if (bunchTime < time_to_prompt_end) {
+        	// Prompt window check: bunchTime < bunch_time_cutoff + time_to_prompt_end (prompt_window_end)
+        	if (bunchTime < prompt_window_end) {
             	promptClusterCount[clusterEN]++;
         	}
     	}
@@ -394,7 +410,7 @@ void stvPrep(){
         	}
 
 			// 3. Must be a prompt cluster
-			if (bunchTime > time_to_prompt_end) {
+			if (bunchTime > prompt_window_end) {
             	continue;
         	}
 
@@ -403,8 +419,8 @@ void stvPrep(){
             	continue;
         	}
 
-			// 5. Must be within the defined beam spill
-			if (bunchTime < BUNCH_START || bunchTime > BUNCH_END) {
+			// 5. Must be within the beam spill
+			if (bunchTime > bunch_time_cutoff) {
             	continue;
         	}
 
@@ -472,6 +488,8 @@ void stvPrep(){
 
 		bool NCQE_Selected = false;   // reco
 
+		//double dirt_muon = 1.0;             // apply weighting to external events		
+
 		// total weights
 		std::vector<double> All_weight;
 		std::vector<double> flux_All;
@@ -482,6 +500,8 @@ void stvPrep(){
 		TBranch *NCQEreco   = tTrig->Branch("NCQE_Selected", &NCQE_Selected, "NCQEreco/O");
 		TBranch *WAll       = tTrig->Branch("weight_All_UBGenie",&All_weight);
         TBranch *WfAll      = tTrig->Branch("weight_flux_all",&flux_All);
+		//TBranch *DirtMu     = tTrig->Branch("DirtMu",&dirt_muon);
+	
 
 		// *********************************
 		// Loop over trigger tree and fill branches
@@ -498,6 +518,7 @@ void stvPrep(){
         	NCQE_Selected = false; 
         	NCQE_MC_Signal = false;
 			NCQE_EventCategory = -1;
+			//dirt_muon = -1;
 
 			bool hasMRDactivity = false;
 			bool hasFMVactivity = false;
@@ -543,11 +564,13 @@ void stvPrep(){
 			// External
 			if (extVol) {
                 NCQE_EventCategory = 1;
+				//dirt_muon = DIRT_SCALE;
             }
 
 			// Out-of-FV
 			else if (!extVol && !trueFV) {
                 NCQE_EventCategory = 2;
+				//dirt_muon = 1.0;
             }
 
 			// At this point, all remaining events are External == 0 && FV == 1.
@@ -557,16 +580,19 @@ void stvPrep(){
 			else if (isNC && isQEL && ((nuPDG == 14) || (nuPDG == 12)) && !isMEC && (targetZ == 8)) {
 				NCQE_MC_Signal = true;
 				NCQE_EventCategory = 0;
+				//dirt_muon = 1.0;
 			}
 
 			// nubarNCQE
 			else if (isNC && isQEL && ((nuPDG == -14) || (nuPDG == -12)) && !isMEC && (targetZ == 8)) {
                 NCQE_EventCategory = 5;
+				//dirt_muon = 1.0;
             }
 
 			// CC
 			else if (!isNC) {
                 NCQE_EventCategory = 3;
+				//dirt_muon = 1.0;
             }
 
 			// NCother
@@ -578,12 +604,14 @@ void stvPrep(){
             // of the NCother definition).
             else if (isNC) { // Equivalent to trueNC == 1 and all other conditions failed
                 NCQE_EventCategory = 4;
+				//dirt_muon = 1.0;
             }
 
         	// Fill the new branch entry
         	NCQEreco->Fill();
 			NCQEsig->Fill();
 			NCQEevtcat->Fill();		
+			//DirtMu->Fill();
 
 			//XSec weight appendage (what MicroBooNE uses)
         	All_weight.insert(All_weight.end(), All0_weight->begin(), All0_weight->end());

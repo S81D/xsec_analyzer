@@ -1,73 +1,12 @@
-# Trigger counts and POT exposures are taken from the searching4nues
-# spreadsheet: tinyurl.com/pelee-nue-ntuples
-# file_name run file_type [triggers POT (for data only)]
+# Paths to relevant files; column information: path_to_file, run_number(trivial for annie, set to 1), tag_name, triggers, POT
+# Beam-off & MC should be assigned 0 POT, all runs should be set to 1
+# As the Beam-off is MC, just assign 1 trigger
 #
-# Open beam-on data
-# /uboone/data/users/gardiner/ntuples-stv/stv-data_bnb_mcc9.1_v08_00_00_25_reco2_C1_beam_good_reco2_5e19.root 1 onBNB 10080350 4.54e19
-# /uboone/data/users/gardiner/ntuples-stv/stv-data_bnb_mcc9.1_v08_00_00_25_reco2_G1_beam_good_reco2_1e19.root 3 onBNB  2271036 9.43e18
+# Beam-off data (fake, MC single entry file)
+/exp/annie/data/users/doran/GENIE_reweight_MC_ToolChain/MC_bkg.root 1 extBNB 1 0
 #
-# Beam-off data
-/exp/annie/data/users/jminock/standard_tank_ntuples/PhaseIITree_bg2_ntuple.root 1 extBNB 20000 0
-#/exp/annie/data/users/jminock/standard_tank_ntuples/PhaseIITree_20k_ntuple.root 2 extBNB 20000 0
-#/exp/annie/data/users/jminock/standard_tank_ntuples/PhaseIITree_20k_ntuple.root 3 extBNB 20000 0
-#/uboone/data/users/gardiner/ntuples-stv/stv-data_extbnb_mcc9.1_v08_00_00_25_reco2_C_all_reco2.root 1 extBNB 65498807 0
-#/uboone/data/users/gardiner/ntuples-stv/stv-data_extbnb_mcc9.1_v08_00_00_25_reco2_D_E_all_reco2.root 2 extBNB 152404890 0
-#/uboone/data/users/gardiner/ntuples-stv/stv-data_extbnb_mcc9.1_v08_00_00_25_reco2_F_G_all_reco2.root 3 extBNB 214555174 0
+# Full beam-on data (MC FakeData)
+/exp/annie/data/users/doran/GENIE_reweight_MC_ToolChain/GENIE-Empirical-4.417e20-ntuple_dirt_downsampled_stripped.root 1 onBNB 2358240 4.417e20
 #
-# Full beam-on data
-#/exp/annie/data/users/jminock/standard_tank_ntuples/PhaseIITree_large_unweighted_ntuple.root 1 onBNB 1895996 1.463e21
-/pnfs/annie/persistent/users/jminock/v1_3_1_ntuples/PhaseIITree_400k_BNB_ntuple.root 1 onBNB 384575 1.5297e20
-#/exp/annie/data/users/jminock/standard_tank_ntuples/PhaseIITree_20k_ntuple.root 3 onBNB 20000 1.56e19
-#/uboone/data/users/gardiner/ntuples-stv/stv-run1_neutrinoselection_filt_numu_ALL.root 1 onBNB 36139233 1.62e20
-#/uboone/data/users/gardiner/ntuples-stv/stv-run2_neutrinoselection_filt_numu_ALL.root 2 onBNB 62045760 2.62e20
-#/uboone/data/users/gardiner/ntuples-stv/stv-run3_neutrinoselection_filt_numu_ALL.root 3 onBNB 61012955 2.55e20
-#
-# Dirt MC samples
-#/exp/annie/data/users/jminock/standard_tank_ntuples/PhaseIITree_20k_ntuple.root 1 dirtMC 20000 1.56e19
-#/exp/annie/data/users/jminock/standard_tank_ntuples/PhaseIITree_20k_ntuple.root 2 dirtMC 20000 1.56e19
-#/exp/annie/data/users/jminock/standard_tank_ntuples/PhaseIITree_20k_ntuple.root 3 dirtMC 20000 1.56e19
-#/uboone/data/users/gardiner/ntuples-stv/stv-prodgenie_bnb_dirt_overlay_mcc9.1_v08_00_00_26_run1_reco2_reco2.root 1 dirtMC
-#/uboone/data/users/gardiner/ntuples-stv/stv-prodgenie_dirt_overlay_v08_00_00_35_all_run2_reco2_reco2.root 2 dirtMC
-#/uboone/data/users/gardiner/ntuples-stv/stv-prodgenie_bnb_dirt_overlay_mcc9.1_v08_00_00_26_run3_reco2_reco2.root 3 dirtMC
-#
-# Intrinsic nue MC samples
-#/exp/annie/data/users/jminock/standard_tank_ntuples/PhaseIITree_20k_ntuple.root 1 nueMC 20000 1.56e19
-#/exp/annie/data/users/jminock/standard_tank_ntuples/PhaseIITree_20k_ntuple.root 2 nueMC 20000 1.56e19
-#/exp/annie/data/users/jminock/standard_tank_ntuples/PhaseIITree_20k_ntuple.root 3 nueMC 20000 1.56e19
-#/uboone/data/users/gardiner/ntuples-stv/stv-prodgenie_bnb_intrinsice_nue_uboone_overlay_mcc9.1_v08_00_00_26_run1_reco2_reco2.root 1 nueMC
-#/uboone/data/users/gardiner/ntuples-stv/stv-prodgenie_bnb_intrinsic_nue_overlay_run2_v08_00_00_35_run2a_reco2_reco2.root 2 nueMC
-#/uboone/data/users/gardiner/ntuples-stv/stv-prodgenie_bnb_intrinsice_nue_uboone_overlay_mcc9.1_v08_00_00_26_run3_reco2_reco2.root 3 nueMC
-#
-# numu MC samples
-#/exp/annie/data/users/jminock/standard_tank_ntuples/PhaseIITree_large_unweighted_ntuple.root 1 numuMC
-/pnfs/annie/persistent/users/jminock/v1_3_1_ntuples/PhaseIITree_400k_ntuple.root 1 numuMC
-#/exp/annie/data/users/jminock/standard_tank_ntuples/PhaseIITree_20k_ntuple.root 3 numuMC
-#/uboone/data/users/gardiner/ntuples-stv/stv-prodgenie_bnb_nu_uboone_overlay_mcc9.1_v08_00_00_26_filter_run1_reco2_reco2.root 1 numuMC
-#/uboone/data/users/gardiner/ntuples-stv/stv-prodgenie_bnb_nu_uboone_overlay_mcc9.1_v08_00_00_26_filter_run2_reco2_D1D2_reco2.root 2 numuMC
-#/uboone/data/users/gardiner/ntuples-stv/stv-prodgenie_bnb_nu_uboone_overlay_mcc9.1_v08_00_00_26_filter_run3_reco2_G_reco2.root 3 numuMC
-#
-# detVar MC samples
-#/pnfs/annie/persistent/users/jminock/v1_3_1_ntuples/PhaseIITree_40k_ntuple.root 1 detVarCVExtra
-/pnfs/annie/persistent/users/jminock/v1_3_1_ntuples/PhaseIITree_400k_DVCV_ntuple.root 1 detVarCV
-/pnfs/annie/persistent/users/jminock/v1_3_1_ntuples/PhaseIITree_400k_DV_ntuple.root 1 detVarShiftE
-#/exp/annie/data/users/jminock/standard_tank_ntuples/PhaseIITree_20k_ntuple.root 3 onBNB 20000 1.56e19
-#/uboone/data/users/gardiner/ntuples-stv/stv-high_stat_prodgenie_bnb_nu_overlay_DetVar_Run3_CVextra_reco2_reco2.root 3 detVarCVExtra
-#/uboone/data/users/gardiner/ntuples-stv/stv-high_stat_prodgenie_bnb_nu_overlay_DetVar_Run3_CV_reco2_reco2.root 3 detVarCV
-#/uboone/data/users/gardiner/ntuples-stv/stv-high_stat_prodgenie_bnb_nu_overlay_DetVar_Run3_dEdx_reco2_reco2.root 3 detVarWMdEdx
-#/uboone/data/users/gardiner/ntuples-stv/stv-high_stat_prodgenie_bnb_nu_overlay_DetVar_Run3_LYAttenuation_reco2_reco2.root 3 detVarLYatten
-#/uboone/data/users/gardiner/ntuples-stv/stv-high_stat_prodgenie_bnb_nu_overlay_DetVar_Run3_LYDown_reco2_reco2.root 3 detVarLYdown
-#/uboone/data/users/gardiner/ntuples-stv/stv-high_stat_prodgenie_bnb_nu_overlay_DetVar_Run3_LYRayleigh_reco2_reco2.root 3 detVarLYrayl
-#/uboone/data/users/gardiner/ntuples-stv/stv-high_stat_prodgenie_bnb_nu_overlay_DetVar_Run3_Recombination_reco2_reco2.root 3 detVarRecomb2
-#/uboone/data/users/gardiner/ntuples-stv/stv-high_stat_prodgenie_bnb_nu_overlay_DetVar_Run3_SCE_reco2_reco2.root 3 detVarSCE
-#/uboone/data/users/gardiner/ntuples-stv/stv-high_stat_prodgenie_bnb_nu_overlay_DetVar_Run3_ThetaXZ_reco2_reco2.root 3 detVarWMAngleXZ
-#/uboone/data/users/gardiner/ntuples-stv/stv-high_stat_prodgenie_bnb_nu_overlay_DetVar_Run3_ThetaYZ_reco2_reco2.root 3 detVarWMAngleYZ
-#/uboone/data/users/gardiner/ntuples-stv/stv-high_stat_prodgenie_bnb_nu_overlay_DetVar_Run3_X_reco2_reco2.root 3 detVarWMX
-#/uboone/data/users/gardiner/ntuples-stv/stv-high_stat_prodgenie_bnb_nu_overlay_DetVar_Run3_YZ_reco2_reco2.root 3 detVarWMYZ
-#
-# NuWro numuMC
-#/exp/annie/data/users/jminock/standard_tank_ntuples/PhaseIITree_20k_ntuple.root 1 altCVMC 20000 1.56e19
-#/exp/annie/data/users/jminock/standard_tank_ntuples/PhaseIITree_20k_ntuple.root 2 altCVMC 20000 1.56e19
-#/exp/annie/data/users/jminock/standard_tank_ntuples/PhaseIITree_20k_ntuple.root 3 altCVMC 20000 1.56e19
-#/uboone/data/users/gardiner/ntuples-stv/stv-high_stat_prodgenie_bnb_nu_overlay_DetVar_Run1_NuWro_reco2_reco2.root 1 altCVMC
-#/uboone/data/users/gardiner/ntuples-stv/stv-high_stat_prodgenie_bnb_nu_overlay_DetVar_Run2_NuWro_reco2_reco2.root 2 altCVMC
-#/uboone/data/users/gardiner/ntuples-stv/stv-high_stat_prodgenie_bnb_nu_overlay_DetVar_Run3_NuWro_reco2_reco2.root 3 altCVMC
+# MC samples
+/exp/annie/data/users/doran/GENIE_reweight_MC_ToolChain/GENIE-Empirical-4.417e20-ntuple_dirt_downsampled.root 1 numuMC

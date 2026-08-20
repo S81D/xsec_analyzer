@@ -851,16 +851,23 @@ void SystematicsCalculator::build_universes(TDirectoryFile &root_tdir)
           file_pot = temp_pot->GetVal();
           std::cout << "DEBUG SystematicsCalculator::build_universes() Point 20" << std::endl;
 */
-          TTree* temp_mc_tree = (TTree*) temp_mc_file.Get("phaseIITriggerTree");
-          double temp_pot = 0;
-          temp_mc_tree->SetBranchAddress( "beam_pot", &temp_pot );
-          temp_mc_tree->GetEntry(0);
-          if ( temp_pot == 0 ) throw std::runtime_error( "Missing POT in MC file!" );
+//          TTree* temp_mc_tree = (TTree*) temp_mc_file.Get("phaseIITriggerTree");
+//          double temp_pot = 0;
+//          temp_mc_tree->SetBranchAddress( "beam_pot", &temp_pot );
+//          temp_mc_tree->GetEntry(0);
+//          if ( temp_pot == 0 ) throw std::runtime_error( "Missing POT in MC file!" );
 //          file_pot = temp_pot->GetVal();
+<<<<<<< HEAD
           file_pot = temp_pot;
 
           // manually enter POT for the MC files you are running over (this should match the POT for the data)
           file_pot = 5.518e16; // The current world POT is: 2.3081794e+20 per 4183 files (5.518e16 POT per file on average)
+=======
+//          file_pot = temp_pot;
+
+          // manually enter POT for the MC files you are running over (this should match the POT for the data)
+          file_pot = 4.417e20; //2.2828e20; // The current world POT is: 2.3081794e+20 per 4183 files (5.518e16 POT per file on average)
+>>>>>>> 2be0f54 (NCQE Documentation and us scripts for GENIE Empirical Model)
         }
         else
         {
@@ -1745,10 +1752,10 @@ std::unique_ptr<CovMatrixMap> SystematicsCalculator::get_covariances() const
       // The Recomb2 and SCE variations use an alternate "extra CV" universe
       // since they were generated with smaller MC statistics.
       // TODO: revisit this if your detVar samples change in the future
-      if (ntuple_type == NFT::kDetVarMCSCE || ntuple_type == NFT::kDetVarMCRecomb2)
-      {
-        detVar_cv_u = detvar_universes_.at(NFT::kDetVarMCCVExtra).get();
-      }
+//      if (ntuple_type == NFT::kDetVarMCSCE || ntuple_type == NFT::kDetVarMCRecomb2)
+//      {
+//        detVar_cv_u = detvar_universes_.at(NFT::kDetVarMCCVExtra).get();
+//      }
 
       // temp_cov_mat.get_matrix()->Print();
 
