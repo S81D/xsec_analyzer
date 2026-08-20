@@ -1,2 +1,3 @@
-/exp/annie/data/users/jminock/standard_tank_ntuples/PhaseIITree_bg2_ntuple.root
-/pnfs/annie/persistent/users/jminock/v1_3_0_ntuples/PhaseIITree_400k_ntuple.root
+/exp/annie/data/users/doran/GENIE_reweight_MC_ToolChain/MC_bkg.root
+/exp/annie/data/users/doran/GENIE_reweight_MC_ToolChain/GENIE-Empirical-4.417e20-ntuple_dirt_downsampled.root
+/exp/annie/data/users/doran/GENIE_reweight_MC_ToolChain/GENIE-Empirical-4.417e20-ntuple_dirt_downsampled_stripped.root
