@@ -1,12 +1,9 @@
-<<<<<<< HEAD
 /*Author: S. Doran <doran@iastate.edu>
  *
  * Usage: ./NC_analyzer
  *
  */
 
-=======
->>>>>>> 2be0f54 (NCQE Documentation and us scripts for GENIE Empirical Model)
 #include <iostream>
 #include <iomanip>
 #include <string> 
@@ -38,16 +35,13 @@ void XS_extractor() {
     const auto &syst = *mcc9;
     std::cout << "\nSystematics Calculator initialized" << std::endl;
 
-<<<<<<< HEAD
     std::cout << "\nIntializing File Properties Manager...\n" << std::endl;
 	  auto& fpm = FilePropertiesManager::Instance();
     fpm.load_file_properties( "file_properties.txt" );
     std::cout << "\nFile Properties Manager initialized" << std::endl;
-=======
 
 	auto& fpm = FilePropertiesManager::Instance();
     fpm.load_file_properties( "file_properties.txt" );
->>>>>>> 2be0f54 (NCQE Documentation and us scripts for GENIE Empirical Model)
 
 
     // 2 for the show
@@ -67,22 +61,16 @@ void XS_extractor() {
 
     // XS equation: (N-B) / [eff * N_targets * Phi]
     // conversion factor = N_targets * Phi [cm^2 / nucleon], then divide by 10^-38
-<<<<<<< HEAD
     double total_pot = mcc9->total_bnb_data_pot_;   // from Data (FakeData) file
-=======
     double total_pot = mcc9->total_bnb_data_pot_;   // from Data / FakeData file
->>>>>>> 2be0f54 (NCQE Documentation and us scripts for GENIE Empirical Model)
     double integ_flux = integrated_numu_flux_in_FV( total_pot );
     double num_Ar = num_O_targets_in_FV();
     double conv_factor = (num_Ar * integ_flux)/1e38;
 
-<<<<<<< HEAD
-=======
 	std::cout << "Total POT = " << total_pot << std::endl;
 	std::cout << "Integrated flux = " << integ_flux << std::endl;
 	std::cout << "N targets = " << num_Ar << std::endl;
 	std::cout << "Conversion factor = " << conv_factor << std::endl;
->>>>>>> 2be0f54 (NCQE Documentation and us scripts for GENIE Empirical Model)
 
     // covariance matrix and event rates
     std::cout << "\nGrabbing covariance matrix...\n" << std::endl;
@@ -90,9 +78,7 @@ void XS_extractor() {
     // Evaluate the total and partial covariance matrices in reco space
     auto matrix_map = syst.get_covariances();
 
-<<<<<<< HEAD
-
-	  std::cout << "\nStarting the unfolding -----------------" << std::endl;
+	std::cout << "\nStarting the unfolding -----------------" << std::endl;
 
     // Perform background subtraction and unfolding to get a measurement of event
     // counts in (regularized) true space
@@ -208,7 +194,6 @@ void XS_extractor() {
 
     // end function
     std::cout << "\n" <<std::endl;
-=======
 	std::cout << "\nStarting the unfolding -----------------" << std::endl;
 	// Perform background subtraction and unfolding to get a measurement of event
   // counts in (regularized) true space
@@ -332,9 +317,6 @@ void XS_extractor() {
         std::cout << "-------------------------------------------------------\n" << std::endl;
       }
   }
-
->>>>>>> 2be0f54 (NCQE Documentation and us scripts for GENIE Empirical Model)
-
 }
 
 
@@ -343,8 +325,5 @@ int main(int argc, char* argv[]) {
    XS_extractor();
    return 0;
 }
-<<<<<<< HEAD
 
 // done
-=======
->>>>>>> 2be0f54 (NCQE Documentation and us scripts for GENIE Empirical Model)
