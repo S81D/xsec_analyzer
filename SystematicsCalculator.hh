@@ -857,17 +857,9 @@ void SystematicsCalculator::build_universes(TDirectoryFile &root_tdir)
 //          temp_mc_tree->GetEntry(0);
 //          if ( temp_pot == 0 ) throw std::runtime_error( "Missing POT in MC file!" );
 //          file_pot = temp_pot->GetVal();
-<<<<<<< HEAD
-          file_pot = temp_pot;
 
-          // manually enter POT for the MC files you are running over (this should match the POT for the data)
-          file_pot = 5.518e16; // The current world POT is: 2.3081794e+20 per 4183 files (5.518e16 POT per file on average)
-=======
-//          file_pot = temp_pot;
-
-          // manually enter POT for the MC files you are running over (this should match the POT for the data)
-          file_pot = 4.417e20; //2.2828e20; // The current world POT is: 2.3081794e+20 per 4183 files (5.518e16 POT per file on average)
->>>>>>> 2be0f54 (NCQE Documentation and us scripts for GENIE Empirical Model)
+          // manually enter POT for the MC files you are running over
+          file_pot = 4.417e20;
         }
         else
         {
